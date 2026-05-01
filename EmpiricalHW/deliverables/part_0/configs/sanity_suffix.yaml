@@ -1,0 +1,26 @@
+out_dir: runs/sanity_suffix
+seed: 42
+device: auto
+task: sanity_suffix
+data_dir: ""
+p: 97
+op: "+"
+split_seed: 0
+n_layer: 1
+n_head: 4
+n_embd: 128
+dropout: 0.0
+bias: true
+block_size: 128
+batch_size: 4
+max_steps: 3000
+lr: 0.001
+weight_decay: 0.01
+betas: [0.9, 0.999]
+grad_clip: 1.0
+log_every: 50
+eval_every: 100
+save_every: 500
+warmup_steps: 0
+loss_answer_only: false
+sanity_mask_first_body_tokens: 3
