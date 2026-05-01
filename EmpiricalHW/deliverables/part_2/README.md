@@ -3,4 +3,4 @@
 - `part_2_starter.ipynb`
 - `requirements.txt`
 - `ps.md`
-- `README.md`
+- `starter_repo_README.md` (same text as course repo `README.md`)
