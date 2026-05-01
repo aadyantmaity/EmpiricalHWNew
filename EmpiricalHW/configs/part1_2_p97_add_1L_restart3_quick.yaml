@@ -1,0 +1,23 @@
+out_dir: runs/part1_2_quick/p97_add_1L_restart3
+seed: 303
+device: cpu
+task: arith
+split_seed: 0
+p: 97
+op: "+"
+n_layer: 1
+n_head: 4
+n_embd: 128
+dropout: 0.0
+bias: true
+block_size: 256
+batch_size: 64
+max_steps: 600
+lr: 0.001
+weight_decay: 1.0
+betas: [0.9, 0.999]
+grad_clip: 1.0
+log_every: 50
+eval_every: 100
+save_every: 600
+loss_answer_only: true

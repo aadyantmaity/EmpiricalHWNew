@@ -1,0 +1,17 @@
+{
+  "p": 113,
+  "op": "+",
+  "seed": 0,
+  "equation_format": "{a} {op} {b} = {c} (mod p); decimal digits, spaces around op and =.",
+  "split_fractions": {
+    "train": 0.8,
+    "val": 0.1,
+    "test": 0.1
+  },
+  "total_pairs_before_split": 12769,
+  "counts": {
+    "train": 10215,
+    "val": 1276,
+    "test": 1278
+  }
+}
