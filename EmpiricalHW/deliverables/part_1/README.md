@@ -1,23 +1,21 @@
-## Part 1 — Algorithmic tasks (data, grokking, ablations)
+## `part_1/`
 
-**Copied artifacts**
-
-- **Code:** Same core stack as Part 0, plus `analyze_grokking.py`, `plot_metrics.py`, `plot_restarts.py`
-- **Data:** `data/` (p = 97 and 113, all operators)
-- **Configs:** `configs/part1_*.yaml`, `arith_smoke.yaml`
-- **Report source:** `deliverables.tex` (Parts 0–1.4)
-
-**Deliverables to add when ready**
-
-- Generated train/val/test splits (included under `data/`)
-- Training/test curves, grokking plot, ablation plots
-- Checkpoints (e.g. 1.2 one-restart model, 1.3 division model) — from `runs/`; may be large
-- Inference demo per assignment (use `inference.py` in the main `EmpiricalHW` tree with your checkpoint path)
-
-**Example commands**
+- `deliverables.tex`
+- `1.1/` — data + `arith_data.py`
+- `1.2/` — §1.2 configs, code, `plots/`, `logs/`, `checkpoints/`
+- `1.3/` — §1.3 configs + code + `plots/`
+- `1.4/` — §1.4 configs + `plots/`
 
 ```bash
+# from EmpiricalHW/
+python arith_data.py --seed 0
+
+python train.py --config configs/part1_2_p97_add_1L_restart1.yaml
+python plot_metrics.py --csv runs/<run>/metrics.csv --out <out>.png
+python plot_restarts.py --csv runs/a/metrics.csv runs/b/metrics.csv runs/c/metrics.csv --labels s1 s2 s3 --out <out>.png
+
 python train.py --config configs/part1_3_div_p97.yaml
+
 python train.py --config configs/part1_4_ablation_dropout.yaml
 python train.py --config configs/part1_4_ablation_wd_low.yaml
 ```

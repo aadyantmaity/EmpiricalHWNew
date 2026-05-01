@@ -1,0 +1,6 @@
+{
+  "task": "sanity",
+  "p": 97,
+  "op": "+",
+  "vocab_size": 17
+}
