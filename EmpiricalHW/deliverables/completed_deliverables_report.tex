@@ -36,7 +36,7 @@ Aadyant Maity and Rahul Bonthu
 
 Part~0 is basically the codebase the rest of the assignment builds on. Everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API.
 
-We sanity-check with the quick configs from the README, for example:
+We sanity-check with the quick configs under \path{deliverables/part_0/configs/}, for example:
 \begin{verbatim}
 python train.py --config configs/sanity_quick.yaml
 python train.py --config configs/sanity_suffix_quick.yaml
@@ -51,7 +51,7 @@ We shuffled once with seed~$0$, then split each file \textbf{80\% / 10\% / 10\%}
 
 \subsection{Split sizes}
 
-These counts match what is on disk (see \texttt{deliverables/part\_1/1.1/README.md}).
+These counts match what is on disk under \path{deliverables/part_1/1.1/data/}.
 
 \begin{table}[htbp]
   \centering
@@ -105,7 +105,7 @@ Part~1.3 trains on division modulo $97$. The deliverable bundle is under \path{d
 
 \subsection{Training curves}
 
-Figure~\ref{fig:div97} shows loss and accuracy vs.\ step from \texttt{metrics.csv}. We generated the PNG with \texttt{plot\_metrics.py} as described in the folder README.
+Figure~\ref{fig:div97} shows loss and accuracy vs.\ step from \texttt{metrics.csv}. We generated the PNG with \texttt{plot\_metrics.py} from that run's CSV (repo-root script, \texttt{--max-step} optional).
 
 \begin{figure}[htbp]
   \centering
@@ -127,7 +127,7 @@ We are not over-interpreting these here---the figure is the main takeaway for us
 
 \subsection{How to run inference}
 
-From \path{deliverables/part_1/1.3/code/}, the README suggests either free-form generation or \texttt{predict\_answer} on integers. Example:
+From \path{deliverables/part_1/1.3/code/}, we can use either free-form generation or \texttt{predict\_answer} on integers. Example:
 \begin{verbatim}
 python inference.py --checkpoint_dir ../checkpoints/part1_3_div_p97 \
     --prompt "3 / 5 = "
