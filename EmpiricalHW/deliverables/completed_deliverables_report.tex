@@ -20,7 +20,6 @@
 }
 
 \title{CSE 493S Empirical Methods Assignment\\
-\large Progress Report: Finished Deliverables}
 \author{
 Aadyant Maity and Rahul Bonthu
 }
@@ -34,16 +33,16 @@ Aadyant Maity and Rahul Bonthu
 
 \section{Part 0: implementation}
 
-Part~0 is basically the codebase the rest of the assignment builds on. Everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API. We sanity-check with the quick configs under \path{deliverables/part_0/configs/}, for example:
+Part~0 is basically the codebase the rest of the assignment builds on and everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API we sanity-check with the quick configs under \path{deliverables/part_0/configs/}, for example:
 \begin{verbatim}
 python train.py --config configs/sanity_quick.yaml
 python train.py --config configs/sanity_suffix_quick.yaml
 \end{verbatim}
-(run from the \texttt{EmpiricalHW/} root, or point paths appropriately). Nothing fancy to report here besides ``it trains and the contract loads checkpoints''---the interesting experiments start in Part~1.
+(run from the \texttt{EmpiricalHW/} root, or point paths appropriately). Nothing fancy to report here besides ``it trains and the contract loads checkpoints''; the interesting experiments start in Part~1.
 
 \section{Part 1.1: modular arithmetic datasets}
 
-For Part~1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$. We shuffled once with seed~$0$, then split each file \textbf{80\% / 10\% / 10\%} train, validation, and test in that order. Every \texttt{meta.json} matches the lines in the matching \texttt{.txt} files.
+For Part~1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$. We shuffled once with seed~$0$ then split each file \textbf{80\% / 10\% / 10\%} train, validation, and test in that order. Every \texttt{meta.json} matches the lines in the matching \texttt{.txt} files.
 
 \subsection{Split sizes}
 
@@ -102,7 +101,7 @@ Part~1.3 trains on division modulo $97$. The deliverable bundle is under \path{d
 
 \subsection{Training curves}
 
-Figure~\ref{fig:div97} shows loss and accuracy vs.\ step from \texttt{metrics.csv}. We generated the PNG with \texttt{plot\_metrics.py} from that run's CSV (repo-root script, \texttt{--max-step} optional).
+Figure~\ref{fig:div97} shows loss and accuracy vs.\ step from \texttt{metrics.csv}. We generate the PNG with \texttt{plot\_metrics.py} from that run's CSV (repo-root script, \texttt{--max-step} optional).
 
 \begin{figure}[htbp]
   \centering
@@ -120,7 +119,7 @@ At step $300000$ (last row of \texttt{metrics.csv}), the CSV reports roughly:
   \item Test loss $\approx 2.31$, test token acc $\approx 0.566$.
   \item Train equation acc $\approx 0.618$; val/test equation acc stayed low on the last rows.
 \end{itemize}
-We are not over-interpreting these here---the figure is the main takeaway for us until we write up discussion elsewhere.
+We are not over-interpreting these here; the figure is the main takeaway for us until we write up discussion elsewhere.
 
 \subsection{How to run inference}
 
@@ -198,7 +197,7 @@ As shown in Table~\ref{tab:greedy_acc}, the model achieved 0\% accuracy across b
   \end{tabular}
 \end{table}
 
-The uniform failure at zero accuracy is a direct result of the model's behavior during greedy decoding ($do\_sample=False$). Specifically, we observed a phenomenon of ``mode collapse'' or token attraction: once the thinking trace concluded, the model frequently fixated on a single repetitive integer (e.g., ``78'' or ``108'') across many different prompts. Without the variance provided by sampling, the model was unable to escape these local minima to arrive at the correct gold answers for the highly complex AIME problems.
+The uniform failure at zero accuracy is a direct result of the model's behavior during greedy decoding ($do\_sample=False$) specifically we observed a phenomenon of ``mode collapse'' or token attraction: once the thinking trace concluded, the model frequently fixated on a single repetitive integer (e.g., ``78'' or ``108'') across many different prompts without the variance provided by sampling the model was unable to escape these local minima to arrive at the correct gold answers for the highly complex AIME problems.
 
 \subsection{Thinking Length Distribution}
 
@@ -220,5 +219,32 @@ The distribution characteristics are summarized below:
 \end{itemize}
 
 The varied lengths suggest that the model's internal reasoning process scales dynamically with problem complexity, even when the final output fails to reach the correct answer. This baseline serves as the starting point for our subsequent scaling experiments in Part 2.2.
+
+\newpage
+\section{Part 3: Synthesis and analysis}
+
+\subsection{When does each strategy help?}
+
+\textbf{Train time} is most informative when the data are \emph{fixed, symbolic, and repeatable}. Part~1.1 supplies that setting: full modular splits for $p \in \{97,113\}$ (e.g.\ $7527$ train lines for $p=97$ addition; division splits are slightly smaller because $b=0$ is excluded). Part~1.2 shows train-time compute paying off on addition mod $97$: at $100000$ steps, train and test equation accuracy are both about $0.97$--$0.99$, so generalization tracks training and division is harder. Part~1.3 at $300000$ steps: train equation accuracy $\approx 0.62$ while val and test equation accuracy remain near zero and val/test loss rise. Training still improves the training objective, but it does not produce held-out equation correctness within our budget. Part~1.4 isolates hyperparameters: dropout $0.2$ yields near-chance token accuracy ($\approx 0.54$) and equation accuracy of order $10^{-2}$ across splits; weight decay $0.1$ with no dropout drives train equation accuracy to $\approx 0.92$ but leaves val and test equation accuracy at a few percent with val/test loss near $5.6$. Train time then helps \textbf{memorization} or \textbf{stalled optimization}, depending on the knob, not reliably \textbf{test equation success}.
+
+\textbf{Test time} in Part~2.1 (greedy \texttt{Qwen3-4B} on AIME~2024) behaves differently. Accuracy is $0\%$ with and without thinking under exact and flexible scoring (Table~\ref{tab:greedy_acc}), yet thinking traces are long on average (mean $\approx 5844$ tokens, median $\approx 6333$, max $8032$; Figure~\ref{fig:think_dist}). Additional reasoning tokens under greedy decoding therefore did not improve measured accuracy here; they only increased internal computation. Test-time expansion is useful when decoding can still reach a correct, extractable answer. Part~2.1 also notes repetitive integer outputs under greedy settings, which is consistent with compute being spent without improving the graded output.
+
+\textbf{Summary.} Train-time steps aligned well with generalization for Part~1.2; for Parts~1.3--1.4 the same budget tells a split or stagnant test story. Inference-time length in Part~2.1 did not translate into accuracy gains under our greedy protocol.
+
+\subsection{Failure modes and what they share}
+
+We highlight three patterns visible in this report: (1)~Part~1.3 and the low-WD Part~1.4 run show strong train-side progress with weak val/test equation accuracy; (2)~Part~2.1 shows long thinking traces with $0\%$ greedy accuracy when thinking is enabled; (3)~Part~2.1 discusses repetitive final-token behavior under greedy decoding. We do not include Part~2.2 budgets in this PDF, so we do not empirically demonstrate accuracy \emph{dropping} as a function of longer thinking here; we only observe that longer traces did not help under greedy decoding.
+
+The common structure is \textbf{mismatch between compute and the evaluation functional} optimization reduces training loss without yielding correct full equations on held-out modular lines (Parts~1.3--1.4) generation increases thinking tokens without passing the AIME extractors (Part~2.1) the assignment also notes that parallel samples can lack diversity we have not plotted parallel runs in this document conceptually duplicated wrong samples resemble repeated wrong greedy strings more draws need not increase coverage of the correct answer set.
+
+Taken together, compute and generalization are \textbf{not} linked by a fixed monotone map. Either more steps or more tokens can help when they preserve a path to solutions that remain valid under the test metric; otherwise they mainly deepen an unhelpful attractor (memorization without equation generalization, or repetitive incorrect completions).
+
+\subsection{Budget allocation across difficulties}
+
+Consider a single pretrained reasoning model a math benchmark with easy medium and hard items and a fixed total compute budget. \textbf{Easy items:} prioritize inexpensive inference (short or no thinking, greedy or low temperature). Reserve finetuning only if errors are systematic format issues rather than reasoning depth. \textbf{Medium items:} allocate a moderate sequential thinking budget first informed by Part~2.1's observation that traces can be long even when wrong; hold a smaller reserve for targeted continued pretraining or finetuning if diagnostics reveal gaps resembling modular division (Parts~1.3--1.4). Monitor val and test curves as in Part~1.2 and avoid configurations like Part~1.4 dropout that consume steps without progress. \textbf{Hard items:} emphasize search over naive length (parallel samples, temperature, or alternative decoders) since Part~2.1 shows greedy length alone did not lift accuracy. Train-time spend is secondary unless auxiliary structured tasks (Parts~1.1--1.2) are shown to transfer; Parts~1.3--1.4 caution that division-style structure remains difficult.
+
+\textbf{Oracle for partial quality:} if partial solutions could be scored, we would reallocate inference compute from blind restarts toward \textbf{verification and revision} of candidate answers. Parts~1.3--1.4 already show that train loss can improve while equation-level correctness lags, so an oracle would help tie extra tokens to checks that correlate with final correctness rather than to train loss alone.
+
+This allocation is one reasonable policy consistent with Parts~1.1--1.4 and~2.1; it is not claimed to be uniquely optimal.
 
 \end{document}
