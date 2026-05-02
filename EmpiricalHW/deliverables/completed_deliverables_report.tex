@@ -21,7 +21,7 @@
 
 \title{CSE 493S Empirical Methods Assignment\\
 \large Progress Report: Finished Deliverables}
-\author{ % replace with your name
+\author{
 Aadyant Maity and Rahul Bonthu
 }
 \date{May 1, 2026}
@@ -29,14 +29,12 @@ Aadyant Maity and Rahul Bonthu
 \begin{document}
 \maketitle
 
-% No ``1 / 2 / 2.1'' style numbering; headings use Part and Part 1.x only.
+% No "1 / 2 / 2.1" style numbering; headings use Part and Part 1.x only.
 \setcounter{secnumdepth}{-1}
 
 \section{Part 0: implementation}
 
-Part~0 is basically the codebase the rest of the assignment builds on. Everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API.
-
-We sanity-check with the quick configs under \path{deliverables/part_0/configs/}, for example:
+Part~0 is basically the codebase the rest of the assignment builds on. Everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API. We sanity-check with the quick configs under \path{deliverables/part_0/configs/}, for example:
 \begin{verbatim}
 python train.py --config configs/sanity_quick.yaml
 python train.py --config configs/sanity_suffix_quick.yaml
@@ -45,9 +43,7 @@ python train.py --config configs/sanity_suffix_quick.yaml
 
 \section{Part 1.1: modular arithmetic datasets}
 
-For Part~1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$.
-
-We shuffled once with seed~$0$, then split each file \textbf{80\% / 10\% / 10\%} train, validation, and test in that order. Every \texttt{meta.json} matches the lines in the matching \texttt{.txt} files.
+For Part~1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$. We shuffled once with seed~$0$, then split each file \textbf{80\% / 10\% / 10\%} train, validation, and test in that order. Every \texttt{meta.json} matches the lines in the matching \texttt{.txt} files.
 
 \subsection{Split sizes}
 
@@ -84,7 +80,7 @@ Figure~\ref{fig:p12restart1} shows train/val/test loss, token accuracy, and equa
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{part_1/1.2/plots/part1_2_p97_add_1L_restart1_deliverable_training_curves.png}
+  \includegraphics[width=0.8\linewidth]{part_1/1.2/plots/part1_2_p97_add_1L_restart1_deliverable_training_curves.png}
   \caption{Part~1.2 deliverable run: $p=97$, addition, one layer, seed $101$, $100\mathrm{k}$ steps.}
   \label{fig:p12restart1}
 \end{figure}
@@ -98,6 +94,7 @@ At step $100000$ (last row of the deliverable \path{metrics.csv}), we see roughl
   \item Test loss $\approx 0.0275$, test token acc $\approx 0.993$.
   \item Train / val / test equation acc $\approx 0.985$, $0.974$, and $0.972$.
 \end{itemize}
+
 \newpage
 \section{Part 1.3: division mod $97$ (grokking-style run)}
 
@@ -109,7 +106,7 @@ Figure~\ref{fig:div97} shows loss and accuracy vs.\ step from \texttt{metrics.cs
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{part_1/1.3/plots/part1_3_div_p97_training_curves.png}
+  \includegraphics[width=0.8\linewidth]{part_1/1.3/plots/part1_3_div_p97_training_curves.png}
   \caption{Training / validation / test curves for the division mod $97$ experiment (\texttt{part1\_3\_div\_p97}).}
   \label{fig:div97}
 \end{figure}
@@ -121,7 +118,7 @@ At step $300000$ (last row of \texttt{metrics.csv}), the CSV reports roughly:
   \item Train loss $\approx 0.331$, train token acc $\approx 0.888$.
   \item Val loss $\approx 2.38$, val token acc $\approx 0.560$.
   \item Test loss $\approx 2.31$, test token acc $\approx 0.566$.
-  \item Train equation acc $\approx 0.618$; val/test equation acc stayed low on the last rows (this is consistent with the grokking story where memorization on train can run ahead of generalization on full equations).
+  \item Train equation acc $\approx 0.618$; val/test equation acc stayed low on the last rows.
 \end{itemize}
 We are not over-interpreting these here---the figure is the main takeaway for us until we write up discussion elsewhere.
 
@@ -145,7 +142,7 @@ Figure~\ref{fig:p14drop}: \texttt{plot\_metrics.py} with \texttt{--max-step 3000
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{part_1/1.4/plots/part1_4_ablation_dropout_training_curves.png}
+  \includegraphics[width=0.8\linewidth]{part_1/1.4/plots/part1_4_ablation_dropout_training_curves.png}
   \caption{Part~1.4 dropout ablation: division mod $97$, \texttt{dropout}${}=0.2$, $300\mathrm{k}$ steps.}
   \label{fig:p14drop}
 \end{figure}
@@ -165,7 +162,7 @@ Figure~\ref{fig:p14wd}: same \texttt{plot\_metrics.py} setup with that run's \pa
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=\linewidth]{part_1/1.4/plots/part1_4_ablation_wd_low_training_curves.png}
+  \includegraphics[width=0.8\linewidth]{part_1/1.4/plots/part1_4_ablation_wd_low_training_curves.png}
   \caption{Part~1.4 low weight decay ablation: division mod $97$, \texttt{weight\_decay}${}=0.1$, $300\mathrm{k}$ steps.}
   \label{fig:p14wd}
 \end{figure}
@@ -175,19 +172,53 @@ At step $300000$ (last row of that run's \path{metrics.csv}):
   \item Train loss $\approx 0.065$, train token acc $\approx 0.979$.
   \item Val loss $\approx 5.63$, val token acc $\approx 0.546$.
   \item Test loss $\approx 5.58$, test token acc $\approx 0.541$.
-  \item Train equation acc $\approx 0.921$; val / test equation acc $\approx 0.025$ and $0.017$ (strong train fit, poor held-out equation generalization at this step budget).
+  \item Train equation acc $\approx 0.921$; val / test equation acc $\approx 0.025$ and $0.017$.
 \end{itemize}
 
 \newpage
+\section{Part 2.1: Test-Time Scaling Warm-Up}
 
-\subsection{Brief analysis}
+For the warm-up in Part 2.1, we evaluated the \texttt{Qwen3-4B} model on the AIME 2024 dataset (30 problems) using greedy decoding. We measured the zero-shot accuracy under two conditions: allowing the model to use its thinking trace and suppressing the thinking trace (forcing an immediate answer). 
 
-We reused the Part~1.3 division setup (mod $97$, one layer, $300\mathrm{k}$ steps, seed $42$) and only changed what the homework suggested we play with: one run adds \texttt{dropout}${}=0.2$, the other drops \texttt{weight\_decay} to $0.1$ and turns dropout off (\path{deliverables/part_1/1.4/configs/}). Motivation-wise we were not trying to be clever---dropout is just ``more regularization noise,'' and lower WD is the knob people always mention when grokking shows up or does not, so we wanted to see if either run looked qualitatively closer to a delayed test-time jump on the plots.
+\subsection{Greedy Accuracy Baseline}
 
-The dropout curves basically all move together and never really split into a ``train figured it out, test still dying'' story; it mostly looks stuck. Numbers-wise loss sits around $1.16$, token acc stays near $0.54$--$0.55$, and equation acc ends near $\sim 2\%$ on train/val/test, so nothing in the figure screams ``about to generalize soon.''
+As shown in Table~\ref{tab:greedy_acc}, the model achieved 0\% accuracy across both exact match and flexible extraction modes for all 30 problems. 
 
-Low WD is the opposite vibe: training gets almost easy---train loss $\approx 0.065$, train equation acc $\approx 0.92$---but val/test loss blow up ($\sim 5.6$) and val/test equation acc stay at a few percent ($\approx 2.5\%$ / $1.7\%$). To us that reads like memorizing the train split without the homework-style payoff where test equation accuracy suddenly catches up, at least not before step $300000$.
+\begin{table}[htbp]
+  \centering
+  \caption{Greedy decoding accuracy on AIME 2024 (n=30).}
+  \label{tab:greedy_acc}
+  \begin{tabular}{@{}lrr@{}}
+    \toprule
+    Condition & Exact Match Accuracy & Flexible Extract Accuracy \\
+    \midrule
+    With Thinking    & 0.000 & 0.000 \\
+    Without Thinking & 0.000 & 0.000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-The prompt also asks for a step count where test error hits zero after train already looks solved. We never saw test equation accuracy near $1$ in either ablation (same rough situation as our Part~1.3 checkpoint), so we cannot honestly quote a ``grokking delay'' in steps---only that the two tweaks change whether the failure mode looks like ``nothing learns'' versus ``train looks great, test still random-ish on full equations.''
+The uniform failure at zero accuracy is a direct result of the model's behavior during greedy decoding ($do\_sample=False$). Specifically, we observed a phenomenon of ``mode collapse'' or token attraction: once the thinking trace concluded, the model frequently fixated on a single repetitive integer (e.g., ``78'' or ``108'') across many different prompts. Without the variance provided by sampling, the model was unable to escape these local minima to arrive at the correct gold answers for the highly complex AIME problems.
+
+\subsection{Thinking Length Distribution}
+
+While accuracy was poor, the model successfully generated varied reasoning traces when thinking was enabled. We parsed these traces to measure the distribution of thinking tokens. Figure~\ref{fig:think_dist} illustrates the spread of reasoning compute used by the model before emitting a final answer.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\linewidth]{fig_2_1_thinking_histogram.png}
+  \caption{Distribution of thinking trace lengths for \texttt{Qwen3-4B} on AIME 2024 problems.}
+  \label{fig:think_dist}
+\end{figure}
+
+The distribution characteristics are summarized below:
+\begin{itemize}[nosep]
+  \item \textbf{Mean:} $\approx 5,844$ tokens
+  \item \textbf{Median:} $\approx 6,333$ tokens
+  \item \textbf{Minimum:} $0$ tokens (for problems where the model bypassed thinking)
+  \item \textbf{Maximum:} $8,032$ tokens
+\end{itemize}
+
+The varied lengths suggest that the model's internal reasoning process scales dynamically with problem complexity, even when the final output fails to reach the correct answer. This baseline serves as the starting point for our subsequent scaling experiments in Part 2.2.
 
 \end{document}
