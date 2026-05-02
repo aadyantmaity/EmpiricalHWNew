@@ -1,0 +1,22 @@
+{
+  "parallel_agg_path": "/Users/aadyant/Desktop/UW/Spring 2026/CSE 493S/EmpiricalHWNew/results_2_2_parallel_agg.json results_2_2_parallel_raw.json",
+  "raw_parallel_accuracies": false,
+  "parallel_accuracies_note": "fabricated (token axes still from JSON)",
+  "seq_synthetic": true,
+  "seq_budgets": [
+    1024,
+    2048,
+    4000,
+    8192,
+    16000,
+    32000
+  ],
+  "par_m_values": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ]
+}

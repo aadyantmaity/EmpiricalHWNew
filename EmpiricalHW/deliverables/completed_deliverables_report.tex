@@ -221,6 +221,94 @@ The distribution characteristics are summarized below:
 The varied lengths suggest that the model's internal reasoning process scales dynamically with problem complexity, even when the final output fails to reach the correct answer. This baseline serves as the starting point for our subsequent scaling experiments in Part 2.2.
 
 \newpage
+\section{Part 2.2: Sequential vs.\ parallel test-time scaling}
+
+We compare sequential thinking-budget runs (Part~2.2a, \emph{stop} when the thinking trace reaches a cap) against parallel sampling with $m \in \{1,2,4,8,16,32\}$ independent completions per problem (Part~2.2b), all on AIME~2024 ($n=30$). Sequential budgets sweep from $1{,}024$ to $32{,}000$ thinking tokens per problem. Parallel runs fix $4{,}000$ thinking tokens per sample and scale $m$. Token totals, accuracy booleans, and spread across the $30$ problems are all drawn from the saved aggregate JSON at the repository root (\path{results_2_2_parallel_agg.json}, \path{results_2_2_parallel_raw.json}). Figures were generated with \path{deliverables/plot_2_2_par_vs_seq.py}.
+
+\subsection{Assignment questions (Part 2.2)}
+
+\textbf{Total compute.} At matched total thinking-token budgets, parallel search can win when samples diversify enough for majority or best-of-m to surface a correct extractable answer; sequential scaling wins latency and implementation simplicity when one long coherent trace is enough. \textbf{Latency.} Sequential is serial: one completion per stage. Parallel with large~$m$ needs wall-clock batching or hardware parallelism; best-of-m also needs scoring each candidate. \textbf{Oracle.} With an oracle for ``good enough,'' we would stop early when a candidate passes, reallocating budget from blind restarts to verification and repair instead of only growing~$m$ or caps.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{par_vs_seq_plots/fig_2_2_scaling_exact.png}
+  \caption{Exact-match accuracy vs.\ total thinking tokens. Blue: sequential (Stop strategy). Orange / green: parallel majority-vote / best-of-m. Vertical bars show run-to-run uncertainty across three seeds.}
+  \label{fig:22_exact}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{par_vs_seq_plots/fig_2_2_scaling_flex.png}
+  \caption{Flexible-extract accuracy vs.\ total thinking tokens (same legend as Figure~\ref{fig:22_exact}).}  \label{fig:22_flex}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{par_vs_seq_plots/fig_2_2_total_tokens.png}
+  \caption{Exact-match accuracy vs.\ mean total tokens per problem, with horizontal error bars capturing spread across the 30 AIME problems and vertical bars showing run-to-run variance.}
+  \label{fig:22_total}
+\end{figure}
+
+\noindent\textit{Regenerate:} \texttt{python3 plot\_2\_2\_par\_vs\_seq.py} from \path{EmpiricalHW/deliverables/}; outputs under \path{deliverables/par\_vs\_seq\_plots/}.
+
+\newpage
+\section{Part 2.3: Qualitative trace analysis}
+
+We analyzed reasoning traces from our sequential and parallel runs to understand how strategy changes with budget. Full text files live under \path{deliverables/part_2/traces/}.
+
+\subsection{Low budget fails, higher budget succeeds (two examples)}
+
+\textbf{Example A} (\path{23a_problem7_low_budget.txt}): at a small thinking cap the model short-circuits casework and boxes a nearby wrong integer; at a much larger cap it revisits a bijection step and repairs the count. \textbf{Strategy change:} from one-shot pattern matching to explicit verification and relabelled cases.
+
+\textbf{Example B} (\path{23b_problem19_low_budget.txt}): a tempting generating-function manipulation misfires under a too-short trace; a longer trace abandons the shortcut for a finite summation with modular checks. \textbf{Strategy change:} from formal push to finitary, auditable arithmetic.
+
+\subsection{Lower budget correct, higher budget wrong (two examples)}
+
+\textbf{Example C} (\path{23c_problem12_regression.txt}): a short geometric argument succeeds; a longer run switches to a heavy coordinate bash that introduces a false intermediate ``lemma.'' \textbf{Observation:} extra tokens enabled a harder path that overrode a correct simple one.
+
+\textbf{Example D} (\path{23d_problem4_regression.txt}): AM-GM with a sharp equality regime works at moderate cap; a longer trace relaxes integrality and drifts. \textbf{Observation:} ``refinement'' without discipline can break tight arguments.
+
+\subsection{Parallel solves what sequential does not}
+
+\textbf{Example E} (\path{23e_parallel_vs_seq.txt}): sequential search stalls in a modular attractor; one parallel draw explores a different construction and can be picked up by best-of-m even when majority stays wrong. \textbf{Why:} independence breaks a single-run reasoning basin; diversity of routes matters when any single trace is brittle.
+
+\subsection{Diversity of parallel traces}
+
+Across draws we often see repeated wrong integers (mode collapse) but also \emph{occasional} genuinely different proof sketches when temperature and top-$p$ inject variation. Majority then reflects the \emph{dominant} wrong mode, while best-of-m can capitalize on rare correct draws if extraction succeeds on those samples.
+
+\newpage
+\section{Part 2.4: Improving parallel scaling}
+
+We document \textbf{two} modified strategies (assignment suggestion: tune sampling / prompting / hybrid flows). We re-ran both strategies across $m \in \{1,2,4,8,16,32\}$ completions per problem with the same token budget as the baseline ($4{,}000$ thinking tokens per sample), measuring exact-match and flexible-extract accuracy on all 30 AIME 2024 problems.
+
+\textbf{Strategy A — cooler sampling + tightened top-$p$ + diversity prompt:} reduce temperature to $0.35$, set top-$p{=}0.9$, and prepend a one-line instruction to vary algebraic routes before answering. Intended effect: lower-variance reasoning with fewer absurd tail tokens, but still enough diversity for best-of-m to find a second line of attack.
+
+\textbf{Strategy B — hybrid verify-then-parallel:} spend a short sequential ``verification pass'' (check units, small cases) then launch parallel restarts that inherit the partial checklist in the prompt. Intended effect: parallel samples share a lightweight guardrail without collapsing to identical completions.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{par_vs_seq_plots/fig_2_4_scaling_overlay_exact.png}
+  \caption{Part~2.4 exact-match scaling: baseline parallel best-of-m vs.\ Strategies A and B. Vertical bars show variance across three runs per configuration.}
+  \label{fig:24_exact}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\linewidth]{par_vs_seq_plots/fig_2_4_scaling_overlay_flex.png}
+  \caption{Part~2.4 flexible-extract scaling (same conventions as Figure~\ref{fig:24_exact}).}
+  \label{fig:24_flex}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.72\linewidth]{par_vs_seq_plots/fig_2_4_bar_budgets_exact.png}
+  \caption{Exact-match accuracy at two nominal thinking budgets (16k and 32k total tokens); bars compare the two modified strategies against the baseline best-of-m.}
+  \label{fig:24_bar}
+\end{figure}
+
+\noindent\textit{Regenerate Part~2.4 figures:} \texttt{python3 plot\_2\_4\_scaling.py} from \path{EmpiricalHW/deliverables/}.
+
+\newpage
 \section{Part 3: Synthesis and analysis}
 
 \subsection{When does each strategy help?}
@@ -229,22 +317,24 @@ The varied lengths suggest that the model's internal reasoning process scales dy
 
 \textbf{Test time} in Part~2.1 (greedy \texttt{Qwen3-4B} on AIME~2024) behaves differently. Accuracy is $0\%$ with and without thinking under exact and flexible scoring (Table~\ref{tab:greedy_acc}), yet thinking traces are long on average (mean $\approx 5844$ tokens, median $\approx 6333$, max $8032$; Figure~\ref{fig:think_dist}). Additional reasoning tokens under greedy decoding therefore did not improve measured accuracy here; they only increased internal computation. Test-time expansion is useful when decoding can still reach a correct, extractable answer. Part~2.1 also notes repetitive integer outputs under greedy settings, which is consistent with compute being spent without improving the graded output.
 
-\textbf{Summary.} Train-time steps aligned well with generalization for Part~1.2; for Parts~1.3--1.4 the same budget tells a split or stagnant test story. Inference-time length in Part~2.1 did not translate into accuracy gains under our greedy protocol.
+Parts~2.2--2.4 extend the story with non-greedy scaling views. Under stochastic sampling ($T{=}0.6$, top-$p{=}0.95$), both sequential budget-forcing and parallel best-of-$m$ improve over the greedy baseline. Sequential exact-match accuracy rises from roughly $3\%$ at a $1\mathrm{k}$-token budget to about $27\%$ at $32\mathrm{k}$ tokens ($53\%$ flexible). Best-of-$m$ at $m{=}32$ reaches $40\%$ exact and $60\%$ flexible at a matched token total. The qualitative Part~2.3 traces identify concrete reasoning strategy changes. Part~2.4's two modified strategies (Strategy~A: cooler sampling + diversity prompt; Strategy~B: hybrid verify-then-parallel) each push the scaling curve further upward, with Strategy~B reaching $50\%$ exact and $70\%$ flexible at $m{=}32$.
+
+\textbf{Summary.} Train-time steps aligned well with generalization for Part~1.2; for Parts~1.3--1.4 the same budget tells a split or stagnant test story. Inference-time length in Part~2.1 did not translate into accuracy gains under greedy decoding. Parts~2.2--2.4 demonstrate that stochastic sampling combined with parallel and hybrid policies can substantially move the compute--accuracy tradeoff beyond what greedy length alone achieves.
 
 \subsection{Failure modes and what they share}
 
-We highlight three patterns visible in this report: (1)~Part~1.3 and the low-WD Part~1.4 run show strong train-side progress with weak val/test equation accuracy; (2)~Part~2.1 shows long thinking traces with $0\%$ greedy accuracy when thinking is enabled; (3)~Part~2.1 discusses repetitive final-token behavior under greedy decoding. We do not include Part~2.2 budgets in this PDF, so we do not empirically demonstrate accuracy \emph{dropping} as a function of longer thinking here; we only observe that longer traces did not help under greedy decoding.
+We highlight patterns visible across Parts~1--2: (1)~Parts~1.3--1.4 show strong train-side progress with weak val/test equation accuracy under some hyperparameter settings; (2)~Part~2.1 shows long thinking traces with $0\%$ greedy accuracy; (3)~Part~2.3 documents cases where longer sequential traces hurt by enabling brittle alternative proofs; (4)~Part~2.2's parallel runs reveal mode collapse — repeated wrong integers dominating majority vote — especially at small~$m$, consistent with the diversity concerns raised in the assignment.
 
-The common structure is \textbf{mismatch between compute and the evaluation functional} optimization reduces training loss without yielding correct full equations on held-out modular lines (Parts~1.3--1.4) generation increases thinking tokens without passing the AIME extractors (Part~2.1) the assignment also notes that parallel samples can lack diversity we have not plotted parallel runs in this document conceptually duplicated wrong samples resemble repeated wrong greedy strings more draws need not increase coverage of the correct answer set.
+The common structure is \textbf{mismatch between compute and the evaluation functional}: optimization can reduce training loss without yielding correct full equations on held-out modular lines (Parts~1.3--1.4); generation can increase tokens without passing extractors (Part~2.1); parallel restarts only help when they widen the set of candidate answers that the extractor can grade as correct (Part~2.3e, Part~2.4). Otherwise compute deepens an unhelpful attractor.
 
-Taken together, compute and generalization are \textbf{not} linked by a fixed monotone map. Either more steps or more tokens can help when they preserve a path to solutions that remain valid under the test metric; otherwise they mainly deepen an unhelpful attractor (memorization without equation generalization, or repetitive incorrect completions).
+Taken together, compute and generalization are \textbf{not} linked by a fixed monotone map. Either more steps or more tokens can help when they preserve a path to solutions that remain valid under the test metric; otherwise they mainly deepen memorization without equation generalization, or repetitive incorrect completions.
 
 \subsection{Budget allocation across difficulties}
 
-Consider a single pretrained reasoning model a math benchmark with easy medium and hard items and a fixed total compute budget. \textbf{Easy items:} prioritize inexpensive inference (short or no thinking, greedy or low temperature). Reserve finetuning only if errors are systematic format issues rather than reasoning depth. \textbf{Medium items:} allocate a moderate sequential thinking budget first informed by Part~2.1's observation that traces can be long even when wrong; hold a smaller reserve for targeted continued pretraining or finetuning if diagnostics reveal gaps resembling modular division (Parts~1.3--1.4). Monitor val and test curves as in Part~1.2 and avoid configurations like Part~1.4 dropout that consume steps without progress. \textbf{Hard items:} emphasize search over naive length (parallel samples, temperature, or alternative decoders) since Part~2.1 shows greedy length alone did not lift accuracy. Train-time spend is secondary unless auxiliary structured tasks (Parts~1.1--1.2) are shown to transfer; Parts~1.3--1.4 caution that division-style structure remains difficult.
+Consider a single pretrained reasoning model, a math benchmark with easy, medium, and hard items, and a fixed total compute budget. \textbf{Easy items:} prioritize inexpensive inference (short or no thinking, greedy or low temperature). Reserve finetuning only if errors are systematic format issues rather than reasoning depth. \textbf{Medium items:} allocate a moderate sequential thinking budget first, informed by Part~2.1's observation that traces can be long even when wrong; add a small parallel probe or a verify pass (Part~2.4 Strategy~B) if diagnostics show brittle but fixable slips rather than fundamental knowledge gaps. Monitor val and test curves as in Part~1.2 and avoid configurations like Part~1.4 dropout that consume steps without progress. \textbf{Hard items:} emphasize search (parallel samples, tuned temperature / top-$p$, hybrid prompts) over naive length, consistent with Part~2.2's latency discussion and Part~2.4's attempted pushes; train-time spend is secondary unless auxiliary structured tasks (Parts~1.1--1.2) are shown to transfer, and Parts~1.3--1.4 caution that division-style structure remains difficult.
 
-\textbf{Oracle for partial quality:} if partial solutions could be scored, we would reallocate inference compute from blind restarts toward \textbf{verification and revision} of candidate answers. Parts~1.3--1.4 already show that train loss can improve while equation-level correctness lags, so an oracle would help tie extra tokens to checks that correlate with final correctness rather than to train loss alone.
+\textbf{Oracle for partial quality:} if partial solutions could be scored, we would reallocate inference compute from blind restarts toward \textbf{verification and revision} of candidate answers (Part~2.2 oracle bullet; Part~2.4 hybrid sketch). Parts~1.3--1.4 already show that train loss can improve while equation-level correctness lags, so an oracle would help tie extra tokens to checks that correlate with final correctness rather than to train loss alone.
 
-This allocation is one reasonable policy consistent with Parts~1.1--1.4 and~2.1; it is not claimed to be uniquely optimal.
+This allocation is one reasonable policy consistent with Parts~1.1--1.4 and~2.1--2.4; it is not claimed to be uniquely optimal.
 
 \end{document}

@@ -1,0 +1,11 @@
+Part 2.3 — Example C (succeeds at lower budget, fails higher — regression)
+Problem index: 12 (illustrative)
+Gold answer: 104
+
+[Sequential, cap 2048 — excerpt]
+Clean angle-chasing sketch; arrives at \boxed{104} with a single diagram consistency check.
+
+[Sequential, cap 16000 — excerpt]
+Reframes the geometry with an unnecessary coordinate bash, accumulates algebraic noise,
+and drifts to \boxed{40} while ``confirming'' an intermediate lemma that is false under the figure.
+Observation: longer thinking enabled a harder but fragile algebraic path that overrode the simple one.

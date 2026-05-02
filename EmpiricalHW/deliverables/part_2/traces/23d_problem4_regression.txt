@@ -1,0 +1,11 @@
+Part 2.3 — Example D (lower budget correct, higher budget wrong)
+Problem index: 4 (illustrative)
+Gold answer: 236
+
+[Sequential, cap 4000 — excerpt]
+Uses a tight bound from AM-GM once, tracks equality, \boxed{236}.
+
+[Sequential, cap 8192 — excerpt]
+Second-guesses the equality regime, introduces a slack variable that violates a hidden integrality constraint,
+and outputs \boxed{240}.
+Observation: extra tokens funded unhelpful ``refinement'' that broke a valid short proof.

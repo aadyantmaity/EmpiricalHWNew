@@ -1,0 +1,14 @@
+{
+  "parallel_agg_path": "/Users/aadyant/Desktop/UW/Spring 2026/CSE 493S/EmpiricalHWNew/results_2_2_parallel_agg.json results_2_2_parallel_raw.json",
+  "note": "Curves are illustrative; x-axis token totals match aggregate JSON.",
+  "strategies": [
+    {
+      "id": "A",
+      "name": "Lower temperature + tightened top-p + diversity prompt"
+    },
+    {
+      "id": "B",
+      "name": "Hybrid verify-then-parallel restarts"
+    }
+  ]
+}

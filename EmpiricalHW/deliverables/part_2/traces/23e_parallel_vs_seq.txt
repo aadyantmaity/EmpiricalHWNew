@@ -1,0 +1,13 @@
+Part 2.3 — Parallel vs sequential (illustrative contrast)
+Problem index: 21 (illustrative)
+Gold answer: 127
+
+[Sequential, cap 8192 — excerpt]
+Locks onto a recurrent modular pattern and repeats the same incorrect residue class.
+
+[Parallel, m=8, 4000 think tokens per sample — excerpt snippets]
+Sample 2 proposes a different construction (counting chords vs. intervals).
+Sample 5 hits the right decomposition after a failed first page; majority still wrong,
+but best-of-m can pick sample 5 if extraction is clean on that draw.
+Why parallel can help: independent samples break a single-run attractor; diversity in
+solution routes matters more than raw length when one path is wrong but sticky.

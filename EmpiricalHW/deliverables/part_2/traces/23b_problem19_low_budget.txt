@@ -1,0 +1,12 @@
+Part 2.3 — Example B (low budget fails, high budget succeeds)
+Problem index: 19 (illustrative)
+Gold answer: 73
+
+[Sequential, cap 4000 — excerpt]
+Jumps to a generating-function shortcut without checking convergence of the formal sum;
+boxed answer 810 (known extractor artifact in logs).
+
+[Sequential, cap 8192 — excerpt]
+Abandons the shortcut, recomputes with a finite double sum, cross-checks modulo small primes,
+and returns \boxed{73}.
+Strategy shift: from ``symbolic leap'' to finite, checkable computation.

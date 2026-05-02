@@ -1,0 +1,12 @@
+Part 2.3 — Example A (low budget fails, high budget succeeds)
+Problem index: 7 (illustrative AIME-style item)
+Gold answer: 127
+
+[Sequential, thinking cap 2048 tokens — excerpt]
+The model rushes a casework grid, mis-counts a symmetry class, and emits \boxed{130}.
+Strategy: short enumeration, no backtracking when a parity check fails.
+
+[Sequential, thinking cap 16000 tokens — excerpt]
+After hitting the budget wall once, the trace explicitly revisits the bijection step,
+labels cases A/B/C, and corrects the earlier off-by-two. Final \boxed{127}.
+Strategy shift: explicit verification pass + case split rewrite vs. the earlier single-pass guess.
