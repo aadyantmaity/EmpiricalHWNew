@@ -1,0 +1,6 @@
+{
+  "task": "arith",
+  "p": 97,
+  "op": "/",
+  "vocab_size": 18
+}

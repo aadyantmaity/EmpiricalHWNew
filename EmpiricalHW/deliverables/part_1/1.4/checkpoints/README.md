@@ -1,0 +1,2 @@
+- `part1_4_ablation_dropout/` — 300k-step run: `dropout=0.2`, `weight_decay=1.0` (`ckpt_300000.pt`, `metrics.csv`, tokenizer, configs).
+- `part1_4_ablation_wd_low/` — 300k-step run: `dropout=0.0`, `weight_decay=0.1` (same auxiliary files).

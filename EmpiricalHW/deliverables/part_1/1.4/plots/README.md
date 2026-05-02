@@ -1,1 +1,2 @@
-*(PNGs for §1.4)*
+- `part1_4_ablation_dropout_training_curves.png` — `plot_metrics.py --max-step 300000` on `../checkpoints/part1_4_ablation_dropout/metrics.csv`.
+- `part1_4_ablation_wd_low_training_curves.png` — same on `../checkpoints/part1_4_ablation_wd_low/metrics.csv`.

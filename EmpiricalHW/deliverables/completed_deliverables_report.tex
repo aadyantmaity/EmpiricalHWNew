@@ -29,6 +29,9 @@ Aadyant Maity and Rahul Bonthu
 \begin{document}
 \maketitle
 
+% No ``1 / 2 / 2.1'' style numbering; headings use Part and Part 1.x only.
+\setcounter{secnumdepth}{-1}
+
 \section{Part 0: implementation}
 
 Part~0 is basically the codebase the rest of the assignment builds on. Everything lives under \path{deliverables/part_0/}: the usual scripts (\path{train.py}, \path{model.py}, \path{inference.py}, \path{tokenizer_utils.py}, \path{arith_data.py}) plus \path{part_0_1_contract.py} for the autograder-facing API.
@@ -40,9 +43,9 @@ python train.py --config configs/sanity_suffix_quick.yaml
 \end{verbatim}
 (run from the \texttt{EmpiricalHW/} root, or point paths appropriately). Nothing fancy to report here besides ``it trains and the contract loads checkpoints''---the interesting experiments start in Part~1.
 
-\section{Section 1.1: modular arithmetic datasets}
+\section{Part 1.1: modular arithmetic datasets}
 
-For \S1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$.
+For Part~1.1 we generated text files of equations \texttt{a op b = c} with arithmetic mod $p$. Addition and subtraction iterate all pairs $(a,b)$ with $0 \le a,b < p$. Division skips $b=0$ and uses $b \in \{1,\ldots,p-1\}$, so division sets are a bit smaller than add/sub for the same~$p$.
 
 We shuffled once with seed~$0$, then split each file \textbf{80\% / 10\% / 10\%} train, validation, and test in that order. Every \texttt{meta.json} matches the lines in the matching \texttt{.txt} files.
 
@@ -71,9 +74,34 @@ To regenerate from the course workflow:
 python arith_data.py --seed 0
 \end{verbatim}
 
-\section{Section 1.3: division mod $97$ (grokking-style run)}
+\section{Part 1.2: addition mod $97$ (one-layer, deliverable run)}
 
-\S1.3 trains on division modulo $97$. The deliverable bundle is under \path{deliverables/part_1/1.3/checkpoints/part1_3_div_p97/}, with final weights \path{ckpt_300000.pt}, \path{tokenizer.json}, \path{metrics.csv}, and resolved config metadata.
+Part~1.2 is the addition-mod-$97$ setup with a one-layer model. Our submitted bundle lives under \path{deliverables/part_1/1.2/checkpoints/p97_add_1L_restart1_seed101/}, with final weights \path{ckpt_100000.pt} (\texttt{max\_steps}${}=100000$, \texttt{save\_every}${}=10000$), plus \path{tokenizer.json}, \path{metrics.csv}, and resolved config metadata.
+
+\subsection{Training curves (seed 101)}
+
+Figure~\ref{fig:p12restart1} shows train/val/test loss, token accuracy, and equation accuracy for steps $0$--$100000$ only (we pass \texttt{--max-step 100000} to \path{plot_metrics.py} so the figure matches the deliverable budget exactly).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{part_1/1.2/plots/part1_2_p97_add_1L_restart1_deliverable_training_curves.png}
+  \caption{Part~1.2 deliverable run: $p=97$, addition, one layer, seed $101$, $100\mathrm{k}$ steps.}
+  \label{fig:p12restart1}
+\end{figure}
+
+\subsection{Numbers at the last logged step (seed 101)}
+
+At step $100000$ (last row of the deliverable \path{metrics.csv}), we see roughly:
+\begin{itemize}[nosep]
+  \item Train loss $\approx 0.0136$, train token acc $\approx 0.996$.
+  \item Val loss $\approx 0.0218$, val token acc $\approx 0.993$.
+  \item Test loss $\approx 0.0275$, test token acc $\approx 0.993$.
+  \item Train / val / test equation acc $\approx 0.985$, $0.974$, and $0.972$.
+\end{itemize}
+\newpage
+\section{Part 1.3: division mod $97$ (grokking-style run)}
+
+Part~1.3 trains on division modulo $97$. The deliverable bundle is under \path{deliverables/part_1/1.3/checkpoints/part1_3_div_p97/}, with final weights \path{ckpt_300000.pt}, \path{tokenizer.json}, \path{metrics.csv}, and resolved config metadata.
 
 \subsection{Training curves}
 
@@ -105,16 +133,61 @@ python inference.py --checkpoint_dir ../checkpoints/part1_3_div_p97 \
     --prompt "3 / 5 = "
 \end{verbatim}
 
-\section{What is still open}
+\newpage
+\section{Part 1.4: ablations (division mod $97$)}
 
-\begin{itemize}
-  \item \textbf{\S1.2:} We have smoke plots and multi-restart curves under \texttt{part\_1/1.2/plots/}, and intermediate checkpoints under \texttt{part\_1/1.2/checkpoints/}, but we still need to drop in the true final \texttt{ckpt\_100000.pt} when the long run finishes.
-  \item \textbf{\S1.4:} Ablation configs exist; we still need to train, save final \texttt{ckpt\_300000.pt} for each setting, and copy the bundles into this deliverables tree.
-  \item \textbf{Part~2 / Part~3:} Notebook work and the written essay are tracked separately from this summary.
+Part~1.4 compares two tweaks to the Part~1.3-style division setup ($p=97$, one layer, $300\mathrm{k}$ steps, seed~$42$). Each ablation has its own checkpoint folder under \path{deliverables/part_1/1.4/checkpoints/}.
+
+\subsection{Dropout (\texttt{dropout}${}=0.2$, \texttt{weight\_decay}${}=1.0$)}
+
+Bundle: \path{part_1/1.4/checkpoints/part1_4_ablation_dropout/}.\\
+Figure~\ref{fig:p14drop}: \texttt{plot\_metrics.py} with \texttt{--max-step 300000}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{part_1/1.4/plots/part1_4_ablation_dropout_training_curves.png}
+  \caption{Part~1.4 dropout ablation: division mod $97$, \texttt{dropout}${}=0.2$, $300\mathrm{k}$ steps.}
+  \label{fig:p14drop}
+\end{figure}
+
+At step $300000$ (last row of that run's \path{metrics.csv}):
+\begin{itemize}[nosep]
+  \item Train loss $\approx 1.16$, train token acc $\approx 0.546$.
+  \item Val loss $\approx 1.16$, val token acc $\approx 0.540$.
+  \item Test loss $\approx 1.16$, test token acc $\approx 0.548$.
+  \item Train / val / test equation acc $\approx 0.021$, $0.016$, and $0.021$.
 \end{itemize}
 
-\section*{Closing}
+\subsection{Low weight decay (\texttt{weight\_decay}${}=0.1$, \texttt{dropout}${}=0.0$)}
 
-If someone only reads one thing: Part~0, \S1.1, and \S1.3 are in good shape in \texttt{deliverables/}; the rest is either partial or lives outside this folder. We will update this \texttt{.tex} file when \S1.2 and \S1.4 catch up.
+Bundle: \path{part_1/1.4/checkpoints/part1_4_ablation_wd_low/}.\\
+Figure~\ref{fig:p14wd}: same \texttt{plot\_metrics.py} setup with that run's \path{metrics.csv}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{part_1/1.4/plots/part1_4_ablation_wd_low_training_curves.png}
+  \caption{Part~1.4 low weight decay ablation: division mod $97$, \texttt{weight\_decay}${}=0.1$, $300\mathrm{k}$ steps.}
+  \label{fig:p14wd}
+\end{figure}
+
+At step $300000$ (last row of that run's \path{metrics.csv}):
+\begin{itemize}[nosep]
+  \item Train loss $\approx 0.065$, train token acc $\approx 0.979$.
+  \item Val loss $\approx 5.63$, val token acc $\approx 0.546$.
+  \item Test loss $\approx 5.58$, test token acc $\approx 0.541$.
+  \item Train equation acc $\approx 0.921$; val / test equation acc $\approx 0.025$ and $0.017$ (strong train fit, poor held-out equation generalization at this step budget).
+\end{itemize}
+
+\newpage
+
+\subsection{Brief analysis}
+
+We reused the Part~1.3 division setup (mod $97$, one layer, $300\mathrm{k}$ steps, seed $42$) and only changed what the homework suggested we play with: one run adds \texttt{dropout}${}=0.2$, the other drops \texttt{weight\_decay} to $0.1$ and turns dropout off (\path{deliverables/part_1/1.4/configs/}). Motivation-wise we were not trying to be clever---dropout is just ``more regularization noise,'' and lower WD is the knob people always mention when grokking shows up or does not, so we wanted to see if either run looked qualitatively closer to a delayed test-time jump on the plots.
+
+The dropout curves basically all move together and never really split into a ``train figured it out, test still dying'' story; it mostly looks stuck. Numbers-wise loss sits around $1.16$, token acc stays near $0.54$--$0.55$, and equation acc ends near $\sim 2\%$ on train/val/test, so nothing in the figure screams ``about to generalize soon.''
+
+Low WD is the opposite vibe: training gets almost easy---train loss $\approx 0.065$, train equation acc $\approx 0.92$---but val/test loss blow up ($\sim 5.6$) and val/test equation acc stay at a few percent ($\approx 2.5\%$ / $1.7\%$). To us that reads like memorizing the train split without the homework-style payoff where test equation accuracy suddenly catches up, at least not before step $300000$.
+
+The prompt also asks for a step count where test error hits zero after train already looks solved. We never saw test equation accuracy near $1$ in either ablation (same rough situation as our Part~1.3 checkpoint), so we cannot honestly quote a ``grokking delay'' in steps---only that the two tweaks change whether the failure mode looks like ``nothing learns'' versus ``train looks great, test still random-ish on full equations.''
 
 \end{document}
